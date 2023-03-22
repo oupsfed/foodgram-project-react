@@ -8,6 +8,9 @@ app_name = 'api'
 router = SimpleRouter()
 router.register('recipes', RecipeViewSet)
 router.register('tags', TagViewSet)
+# router.register(
+#     r'recipes/(?P<recipe_id>\d+)/favorite', FavoriteViewSet,
+#     basename='reviews')
 
 urlpatterns = [
     path('', include(router.urls)),
