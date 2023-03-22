@@ -2,6 +2,7 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -36,11 +37,9 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
-
 
 
 
@@ -84,8 +83,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
     def get_ingredients(self, obj):
-
-        return obj.ingredients.values('id', 'name', 'measurement_unit')
+        return obj.ingredients.values('id',
+                                      'name',
+                                      'measurement_unit',
+                                      amount=F('ingredientrecipe__amount'))
 
 class IngredientCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
