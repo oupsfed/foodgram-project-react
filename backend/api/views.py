@@ -1,11 +1,9 @@
 import io
 
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from django.db.models import F
-from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, mixins, status
 
 from recipes.serializers import RecipeSerializer, TagSerializer, RecipeCreateSerializer, IngredientCreateSerializer, \
@@ -14,7 +12,6 @@ from recipes.models import Recipe, Tag, Ingredient, Favorite, ShoppingCart
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
