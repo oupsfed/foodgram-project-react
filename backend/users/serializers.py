@@ -6,6 +6,8 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import EmailField, ModelSerializer, RegexField, CharField, BooleanField
 from djoser.serializers import UserCreateSerializer, TokenCreateSerializer
 
+from users.models import UserSubscription
+
 User = get_user_model()
 
 
@@ -24,7 +26,9 @@ class UserSerializer(ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        return False
+        user = self.context['request'].user
+        is_subscribed = UserSubscription.objects.filter(user=user, following=obj.id).exists()
+        return is_subscribed
 
 
 class UserRegistrationSerializer(UserCreateSerializer):
@@ -49,31 +53,3 @@ class UserRegistrationSerializer(UserCreateSerializer):
         )
 
 
-class TokenSerializer(TokenCreateSerializer):
-    password = CharField(required=False, style={"input_type": "password"})
-
-    default_error_messages = {
-        "invalid_credentials": settings.CONSTANTS.messages.INVALID_CREDENTIALS_ERROR,
-        "inactive_account": settings.CONSTANTS.messages.INACTIVE_ACCOUNT_ERROR,
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = None
-
-        self.email_field = get_user_email_field_name(User)
-        self.fields[self.email_field] = EmailField()
-
-    def validate(self, attrs):
-        password = attrs.get("password")
-        email = attrs.get("email")
-        self.user = authenticate(
-            request=self.context.get("request"), email=email, password=password
-        )
-        if not self.user:
-            self.user = User.objects.filter(email=email).first()
-            if self.user and not self.user.check_password(password):
-                self.fail("invalid_credentials")
-        if self.user and self.user.is_active:
-            return attrs
-        self.fail("invalid_credentials")

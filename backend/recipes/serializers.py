@@ -11,23 +11,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CurrentUserDefault
 from rest_framework.relations import SlugRelatedField
 
+from users.serializers import UserSerializer
+
 User = get_user_model()
-
-
-class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('email',
-                  'id',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'is_subscribed')
-
-    def get_is_subscribed(self, obj):
-        return False
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -90,6 +76,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                                       'name',
                                       'measurement_unit',
                                       amount=F('ingredientrecipe__amount'))
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class IngredientCreateSerializer(serializers.ModelSerializer):
