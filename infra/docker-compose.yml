@@ -9,6 +9,7 @@ services:
     env_file:
       - ./.env
   frontend:
+    image: oupsfed/foodgram-frontend:latest
     build:
       context: ../frontend
       dockerfile: Dockerfile
