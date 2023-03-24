@@ -26,9 +26,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'gle-pia^n!uy6#iv^3s_%9a7vkt3-1z=p#c95emuw)77b=np(o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '84.201.161.113',
+    'foodgram-react.sytes.net',
+    'backend'
+]
 
 # Application definition
 
