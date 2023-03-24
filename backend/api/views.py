@@ -97,7 +97,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
-        tags = self.request.query_params.get('tags')
+        tags = self.request.query_params.getlist('tags')
         if is_favorited == '1':
             self.queryset = self.queryset.filter(
                 favorite__user=self.request.user
@@ -107,7 +107,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 is_in_shopping_cart__user=self.request.user
             )
         if tags is not None:
-            self.queryset = self.queryset.filter(tags__slug=tags)
+            self.queryset = self.queryset.filter(tags__slug__in=tags)
         return self.queryset
 
     def create(self, request, *args, **kwargs):
