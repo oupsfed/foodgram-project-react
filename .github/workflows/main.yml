@@ -44,6 +44,7 @@ jobs:
       - name: Push to Docker Hub
         uses: docker/build-push-action@v2
         with:
+          context: ./backend/
           push: true
           tags: oupsfed/foodgram-project-react:latest
   deploy:
