@@ -107,7 +107,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 is_in_shopping_cart__user=self.request.user
             )
         if tags is not None:
-            self.queryset = self.queryset.filter(tags__slug__in=tags).distinct()
+            self.queryset = self.queryset.filter(
+                tags__slug__in=tags).distinct()
         return self.queryset
 
     def create(self, request, *args, **kwargs):
