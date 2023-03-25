@@ -9,7 +9,6 @@ services:
     env_file:
       - ./.env
   frontend:
-    image: oupsfed/foodgram-frontend:latest
     build:
       context: ../frontend
       dockerfile: Dockerfile
@@ -22,7 +21,7 @@ services:
       - "8000:8000"
     command: >
       bash -c "python manage.py migrate &&
-      python manage.py collectstatic --no-input &&
+      python manage.py collectstatic --noinput &&
       python manage.py upload_data &&
       gunicorn --bind 0:8000 foodgram.wsgi"
     volumes:
