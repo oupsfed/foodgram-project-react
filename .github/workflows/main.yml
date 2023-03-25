@@ -49,7 +49,7 @@ jobs:
           tags: oupsfed/foodgram-project-react:latest
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_to_docker
+    needs: build_and_push_to_docker_hub
     steps:
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
