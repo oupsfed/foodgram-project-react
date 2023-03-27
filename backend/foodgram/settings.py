@@ -14,7 +14,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '84.201.161.113',
+    '51.250.19.98',
     'foodgram-react.sytes.net',
     'web'
 ]
@@ -75,7 +75,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='3654'),
         'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default=5432)
+        'PORT': os.getenv('DB_PORT', default=5433)
     }
 }
 
