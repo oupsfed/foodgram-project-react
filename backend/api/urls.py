@@ -8,7 +8,7 @@ app_name = 'api'
 
 router = SimpleRouter()
 router.register('users', CustomUserViewSet)
-router.register('recipes', RecipeViewSet)
+router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('tags', TagViewSet)
 router.register('ingredients', IngredientViewSet)
 

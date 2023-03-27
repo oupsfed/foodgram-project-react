@@ -10,10 +10,16 @@ class Tag(models.Model):
     color = models.CharField(max_length=7, blank=True)
     slug = models.SlugField(unique=True, max_length=200)
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -33,6 +39,9 @@ class Recipe(models.Model):
         Ingredient,
         through='IngredientRecipe'
     )
+
+    def __str__(self):
+        return self.name
 
 
 class TagRecipe(models.Model):

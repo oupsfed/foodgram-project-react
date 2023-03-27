@@ -1,13 +1,9 @@
-import io
+import csv
 from urllib.parse import unquote
 
 from django.contrib.auth import get_user_model
-from django.http import FileResponse
-from django_filters.rest_framework import DjangoFilterBackend
+from django.http import HttpResponse
 from djoser.views import UserViewSet
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,6 +13,7 @@ from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import UserSubscription
 
 from .paginators import RecipePagination
+from .permissions import IsAdminAuthorOrReadOnly
 from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
                           RecipeCreateSerializer, TagSerializer,
                           UserSubscribeSerializer)
@@ -25,6 +22,12 @@ User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
+    """
+    Вьюсет Пользователя с дополнительными URL:
+
+    subscribe -- подписаться/отменить подписку на пользователя
+    subscription -- посмотреть свои подписки.
+    """
     pagination_class = RecipePagination
 
     @action(
@@ -85,31 +88,48 @@ class CustomUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
+class RecipeViewSet(mixins.ListModelMixin,
+                    mixins.RetrieveModelMixin,
+                    mixins.CreateModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    viewsets.GenericViewSet):
     serializer_class = RecipeCreateSerializer
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author',)
+    permission_classes = (IsAdminAuthorOrReadOnly,)
+    """
+    Вьюсет рецептов.
+    Разрешенные методы: GET, POST, PATCH, DELETE
+    дополнительные URL:
+    favorite -- Добавить/удалить рецепт из избранного.
+    shopping_cart -- Добавить/удалить рецепт из списка покупок
+    download_shopping_cart -- Скачать файл списка покупок.
+    """
 
     def get_queryset(self):
-
+        queryset = Recipe.objects.all()
         is_favorited = self.request.query_params.get('is_favorited')
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
         tags = self.request.query_params.getlist('tags')
+        author = self.request.query_params.get('author')
         if is_favorited == '1':
-            self.queryset = self.queryset.filter(
+            queryset = queryset.filter(
                 favorite__user=self.request.user
             )
         if is_in_shopping_cart == '1':
-            self.queryset = self.queryset.filter(
+            queryset = queryset.filter(
                 is_in_shopping_cart__user=self.request.user
             )
-        if tags is not None:
-            self.queryset = self.queryset.filter(
+
+        if author:
+            queryset = queryset.filter(
+                author=author
+            )
+        if tags:
+            queryset = queryset.filter(
                 tags__slug__in=tags).distinct()
-        return self.queryset
+        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -186,39 +206,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         shopping_carts = ShoppingCart.objects.filter(user=request.user)
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('Times', 'Slimamif.ttf', 'utf-8'))
-        p.setFont(psfontname='Times', size=24)
-        p.drawString(220, 800, 'Список покупок')
-        loc_y = 750
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
+        response['Content-Type'] = 'charset=utf-8'
+        writer = csv.writer(response)
+        file_data = {}
         for recipe in shopping_carts:
             ingredients = recipe.recipe.ingredients.values(
                 "name",
                 "measurement_unit",
                 "ingredientrecipe__amount")
-            p.setFont(psfontname='Times', size=18)
-            p.drawString(100, loc_y,
-                         f'Рецепт: {recipe.recipe.name}')
-            loc_y -= 20
-            num_of_ingredient = 1
-            p.setFont(psfontname='Times', size=14)
             for ingredient in ingredients:
-                p.drawString(100, loc_y,
-                             f'{num_of_ingredient}.')
-                p.drawString(120, loc_y,
-                             f'{ingredient["name"]} ('
-                             f'{ingredient["ingredientrecipe__amount"]} '
-                             f'{ingredient["measurement_unit"]})')
-                loc_y -= 20
-                num_of_ingredient += 1
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename='shopping_cart.pdf')
+                name = ingredient['name']
+                amount = ingredient['ingredientrecipe__amount']
+                measurement_unit = ingredient['measurement_unit']
+                if name in file_data:
+                    file_data[name]['amount'] += amount
+                else:
+                    file_data[name] = {
+                        'name': name,
+                        'amount': amount,
+                        'measurement_unit': measurement_unit
+                    }
+        for ingredient in file_data.values():
+            writer.writerow([f'· '
+                             f'{ingredient["name"]} '
+                             f'({ingredient["measurement_unit"]}) - '
+                             f'{ingredient["amount"]}'])
+        return response
 
 
 class TagViewSet(mixins.ListModelMixin,
