@@ -94,8 +94,6 @@ class RecipeViewSet(mixins.ListModelMixin,
                     mixins.UpdateModelMixin,
                     mixins.DestroyModelMixin,
                     viewsets.GenericViewSet):
-    serializer_class = RecipeCreateSerializer
-    permission_classes = (IsAdminAuthorOrReadOnly,)
     """
     Вьюсет рецептов.
     Разрешенные методы: GET, POST, PATCH, DELETE
@@ -104,9 +102,11 @@ class RecipeViewSet(mixins.ListModelMixin,
     shopping_cart -- Добавить/удалить рецепт из списка покупок
     download_shopping_cart -- Скачать файл списка покупок.
     """
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeCreateSerializer
+    permission_classes = (IsAdminAuthorOrReadOnly,)
 
     def get_queryset(self):
-        queryset = Recipe.objects.all()
         is_favorited = self.request.query_params.get('is_favorited')
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
@@ -114,22 +114,22 @@ class RecipeViewSet(mixins.ListModelMixin,
         tags = self.request.query_params.getlist('tags')
         author = self.request.query_params.get('author')
         if is_favorited == '1':
-            queryset = queryset.filter(
+            self.queryset = self.queryset.filter(
                 favorite__user=self.request.user
             )
         if is_in_shopping_cart == '1':
-            queryset = queryset.filter(
+            self.queryset = self.queryset.filter(
                 is_in_shopping_cart__user=self.request.user
             )
 
         if author:
-            queryset = queryset.filter(
+            self.queryset = self.queryset.filter(
                 author=author
             )
         if tags:
-            queryset = queryset.filter(
+            self.queryset = self.queryset.filter(
                 tags__slug__in=tags).distinct()
-        return queryset
+        return self.queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
