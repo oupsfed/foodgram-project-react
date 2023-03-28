@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag, TagRecipe)
+from rest_framework.exceptions import ValidationError
 from users.models import UserSubscription
 
 User = get_user_model()
@@ -69,6 +70,17 @@ class UserRegistrationSerializer(UserCreateSerializer):
             'first_name',
             'last_name',
         )
+        read_only_fields = (
+            'id',
+        )
+
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise ValidationError(
+                'Данный email занят!')
+        return value
+
 
 
 class UserSubscribeSerializer(serializers.ModelSerializer):
@@ -94,7 +106,10 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
             'recipes',
             'recipes_count'
         )
-
+        read_only_fields = ('id',
+                            'recipe_count',
+                            'recipes',
+                            'is_subscribed')
     def get_is_subscribed(self, obj):
         user = self.context.user
         return UserSubscription.objects.filter(

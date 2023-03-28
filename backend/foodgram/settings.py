@@ -73,7 +73,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='3654'),
-        'HOST': os.getenv('DB_HOST', default='db'),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
         'PORT': os.getenv('DB_PORT', default=5432)
     }
 }
@@ -127,6 +127,8 @@ DJOSER = {
     'HIDE_USERS': False,
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.AllowAny'],
+        'set_password': ['rest_framework.permissions.CurrentUserOrAdmin'],
+        'set_username': ['rest_framework.permissions.CurrentUserOrAdmin'],
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'SERIALIZERS': {
