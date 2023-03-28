@@ -5,10 +5,10 @@ from django.core.files.base import ContentFile
 from django.db.models import F
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag, TagRecipe)
-from rest_framework.exceptions import ValidationError
 from users.models import UserSubscription
 
 User = get_user_model()
@@ -74,13 +74,11 @@ class UserRegistrationSerializer(UserCreateSerializer):
             'id',
         )
 
-
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise ValidationError(
                 'Данный email занят!')
         return value
-
 
 
 class UserSubscribeSerializer(serializers.ModelSerializer):
@@ -110,6 +108,7 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
                             'recipe_count',
                             'recipes',
                             'is_subscribed')
+
     def get_is_subscribed(self, obj):
         user = self.context.user
         return UserSubscription.objects.filter(
@@ -133,6 +132,7 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор тэгов для рецептов."""
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
@@ -140,6 +140,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор ингредиентов для рецептов."""
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -147,6 +148,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class Base64ImageField(serializers.ImageField):
     """Сериализатор для изображений base64."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -234,6 +236,7 @@ class IngredientCreateSerializer(serializers.ModelSerializer):
 
 class TagCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для добавления тэгов в рецепт."""
+
     class Meta:
         model = Tag
         fields = ('id',)
@@ -313,6 +316,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор с основной информацией по рецепту."""
+
     class Meta:
         model = Recipe
         fields = ('id',
