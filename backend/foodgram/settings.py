@@ -11,13 +11,7 @@ SECRET_KEY = get_random_secret_key()
 
 DEBUG = False
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    '158.160.8.164',
-    'foodgram-react.sytes.net',
-    'web'
-]
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
