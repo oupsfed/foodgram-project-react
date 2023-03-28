@@ -9,17 +9,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = get_random_secret_key()
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '51.250.19.98',
+    '158.160.8.164',
     'foodgram-react.sytes.net',
     'web'
 ]
 
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -75,7 +74,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='3654'),
         'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default=5433)
+        'PORT': os.getenv('DB_PORT', default=5432)
     }
 }
 

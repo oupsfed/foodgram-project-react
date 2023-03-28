@@ -124,7 +124,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор ингридиентов для рецептов."""
+    """Сериализатор ингредиентов для рецептов."""
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -146,7 +146,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     Поля:
     author -- автор рецепта
     tags -- тэги рецепта
-    ingredients -- ингридиенты рецепта
+    ingredients -- ингредиенты рецепта
     is_favorited -- добавлен ли рецепт в избранное у request.user
     is_in_shopping_cart -- добавлен ли рецепт в список покупок у request.user
     name -- название рецепта
@@ -208,7 +208,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для добавления ингридиентов в рецепт."""
+    """Сериализатор для добавления ингредиентов в рецепт."""
     id = serializers.IntegerField()
     amount = serializers.IntegerField(min_value=1)
 
