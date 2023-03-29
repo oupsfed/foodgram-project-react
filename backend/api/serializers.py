@@ -116,7 +116,7 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         user = self.context.user
         recipes_limit = self.context.query_params.get('recipes_limit')
-        recipes = Recipe.objects.filter(author=user).all()
+        recipes = Recipe.objects.filter(author=obj.id).all()
         if recipes_limit is not None:
             recipes = recipes[:int(recipes_limit)]
         serializer = FavoriteRecipeSerializer(recipes, many=True)
