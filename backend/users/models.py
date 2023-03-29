@@ -1,7 +1,22 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-User = get_user_model()
+
+class User(AbstractUser):
+    email = models.EmailField(
+        max_length=254,
+        unique=True
+    )
+    username = models.CharField(
+        max_length=150,
+        unique=True
+    )
+    first_name = models.CharField(
+        max_length=150
+    )
+    last_name = models.CharField(
+        max_length=150
+    )
 
 
 class UserSubscription(models.Model):
@@ -15,3 +30,12 @@ class UserSubscription(models.Model):
         on_delete=models.CASCADE,
         related_name='follower'
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'],
+                name='unique_user_following'
+            )
+        ]
+        ordering = ('user',)

@@ -1,8 +1,8 @@
 import csv
 from urllib.parse import unquote
 
-from django.contrib.auth import get_user_model
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -10,15 +10,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from users.models import UserSubscription
+from users.models import User, UserSubscription
 
 from .paginators import RecipePagination
 from .permissions import IsAdminAuthorOrReadOnly
 from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
                           RecipeCreateSerializer, TagSerializer,
                           UserSubscribeSerializer)
-
-User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
@@ -37,8 +35,13 @@ class CustomUserViewSet(UserViewSet):
         url_path='subscribe',
     )
     def subscribe(self, request, id):
-        following = User.objects.get(pk=id)
+        following = get_object_or_404(User, pk=id)
         user = request.user
+        if following == user:
+            return Response(
+                'Подписываться на себя нельзя',
+                status.HTTP_400_BAD_REQUEST
+            )
         is_exists = UserSubscription.objects.filter(
             user=user,
             following=following
@@ -56,7 +59,7 @@ class CustomUserViewSet(UserViewSet):
         if request.method == 'DELETE' and is_exists:
             UserSubscription.objects.filter(
                 user=user,
-                following=User.objects.get(pk=id)
+                following=following
             ).delete()
             return Response(
                 'Пользователь успешно удален из подписок',
@@ -72,14 +75,6 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request):
         queryset = User.objects.filter(follower__user=request.user)
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = UserSubscribeSerializer(
-                page,
-                many=True,
-                context=self.request
-            )
-            return self.get_paginated_response(serializer.data)
-
         serializer = UserSubscribeSerializer(
             page,
             many=True,
@@ -145,7 +140,7 @@ class RecipeViewSet(mixins.ListModelMixin,
         url_path='favorite',
     )
     def favorite(self, request, pk):
-        recipe = Recipe.objects.get(pk=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         is_exists = Favorite.objects.filter(
             recipe=recipe,
             user=request.user
@@ -175,7 +170,7 @@ class RecipeViewSet(mixins.ListModelMixin,
         url_path='shopping_cart',
     )
     def shopping_cart(self, request, pk):
-        recipe = Recipe.objects.get(pk=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         is_exists = ShoppingCart.objects.filter(
             recipe=recipe,
             user=request.user

@@ -1,6 +1,5 @@
 import base64
 
-from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.db.models import F
 from djoser.serializers import UserCreateSerializer
@@ -9,9 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag, TagRecipe)
-from users.models import UserSubscription
-
-User = get_user_model()
+from users.models import User, UserSubscription
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -270,45 +267,53 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
+        tag_data = []
+        ingredient_data = []
         for tag in tags:
             current_tag = Tag.objects.get(
                 pk=tag
             )
-            TagRecipe.objects.create(
-                tag=current_tag, recipe=recipe
+            tag_data.append(
+                TagRecipe(tag=current_tag, recipe=recipe)
             )
         for ingredient in ingredients:
             current_ingredient = Ingredient.objects.get(
                 pk=ingredient['id']
             )
-            IngredientRecipe.objects.create(
+            ingredient_data.append(IngredientRecipe(
                 ingredient=current_ingredient,
                 recipe=recipe,
                 amount=ingredient['amount']
-            )
+            ))
+        TagRecipe.objects.bulk_create(tag_data)
+        IngredientRecipe.objects.bulk_create(ingredient_data)
         return recipe
 
     def update(self, instance, validated_data):
         instance.tags.clear()
         instance.ingredients.clear()
         tags = validated_data.pop('tags')
+        tag_data = []
+        ingredient_data = []
         for tag in tags:
             current_tag = Tag.objects.get(
                 pk=tag
             )
-            TagRecipe.objects.create(
-                tag=current_tag, recipe=instance
+            tag_data.append(
+                TagRecipe(tag=current_tag, recipe=instance)
             )
         ingredients = validated_data.pop('ingredients')
         for ingredient in ingredients:
             current_ingredient = Ingredient.objects.get(
                 pk=ingredient['id']
             )
-            IngredientRecipe.objects.create(
+            ingredient_data.append(IngredientRecipe(
                 ingredient=current_ingredient,
                 recipe=instance,
                 amount=ingredient['amount']
-            )
+            ))
+        TagRecipe.objects.bulk_create(tag_data)
+        IngredientRecipe.objects.bulk_create(ingredient_data)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.image = validated_data.get('image', instance.image)
