@@ -114,7 +114,6 @@ class UserSubscribeSerializer(serializers.ModelSerializer):
         ).exists()
 
     def get_recipes(self, obj):
-        user = self.context.user
         recipes_limit = self.context.query_params.get('recipes_limit')
         recipes = Recipe.objects.filter(author=obj.id).all()
         if recipes_limit is not None:
