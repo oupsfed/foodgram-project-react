@@ -18,6 +18,15 @@ class User(AbstractUser):
         max_length=150
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
+        ordering = ('username',)
+
 
 class UserSubscription(models.Model):
     user = models.ForeignKey(
