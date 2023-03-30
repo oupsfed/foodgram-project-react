@@ -1,5 +1,9 @@
 ![example workflow](https://github.com/oupsfed/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
+Адрес: http://foodgram-react.sytes.net/
+Логин: admin
+Пароль: admin
+
 ### Проект Foodgram
 Стек:
 - React
