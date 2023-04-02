@@ -41,6 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'name',
         'text',
         'author',
+        'created'
     )
     list_display_links = ('name',)
     list_filter = ('name', 'author', 'tags')
