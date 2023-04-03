@@ -257,6 +257,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if not re.search('[a-zA-Zа-я-А-Я]+', value):
             raise ValidationError(
                 'Название не может быть только из символов или цифр!')
+        return value
 
     def to_representation(self, instance):
         serializer = RecipeSerializer(instance,
