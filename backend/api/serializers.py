@@ -1,4 +1,5 @@
 import base64
+import re
 
 from django.core.files.base import ContentFile
 from django.db.models import F
@@ -251,6 +252,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time'
         )
+
+    def validate_name(self, value):
+        if not re.search('[a-zA-Zа-я-А-Я]+', value):
+            raise ValidationError(
+                'Название не может быть только из символов или цифр!')
 
     def to_representation(self, instance):
         serializer = RecipeSerializer(instance,
